@@ -1,5 +1,6 @@
 // ============================================
 // REGISTER FORM LOGIC - register.js
+// ✅ Updated: Fixed conditional dropdown + DOM ready safety
 // ============================================
 
 import { registerGuru } from '../modules/auth-register.js';
@@ -7,6 +8,7 @@ import { ADMIN_CONFIG } from '../modules/config-admin.js';
 
 // ============================================
 // MATA PELAJARAN KURIKULUM MERDEKA
+// ✅ Lengkap untuk SMP & SMA
 // ============================================
 const MATA_PELAJARAN = {
     smp: [
@@ -66,12 +68,18 @@ const MATA_PELAJARAN = {
 };
 
 // ============================================
-// DOM ELEMENTS (Wait for DOM ready)
+// DOM ELEMENTS (Initialized in DOMContentLoaded)
 // ============================================
 let registerForm, jenjangSelect, mapelGroup, mapelSelect, submitBtn, loadingBtn;
 
+// ============================================
+// INIT: Wait for DOM to be fully loaded
+// ✅ FIX: Ensure elements exist before attaching listeners
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-    // Get DOM elements
+    console.log('📋 Register page DOM loaded');
+    
+    // Get DOM elements with safety checks
     registerForm = document.getElementById('registerForm');
     jenjangSelect = document.getElementById('jenjang');
     mapelGroup = document.getElementById('mapelGroup');
@@ -79,16 +87,20 @@ document.addEventListener('DOMContentLoaded', () => {
     submitBtn = document.getElementById('submitBtn');
     loadingBtn = document.getElementById('loadingBtn');
     
-    console.log('📋 Register form loaded');
-    console.log('🔍 jenjangSelect:', jenjangSelect);
-    console.log('🔍 mapelGroup:', mapelGroup);
+    // Debug log
+    console.log('🔍 Elements:', {
+        registerForm: !!registerForm,
+        jenjangSelect: !!jenjangSelect,
+        mapelGroup: !!mapelGroup,
+        mapelSelect: !!mapelSelect
+    });
     
-    // ✅ FIX: Attach event listener dengan benar
+    // ✅ FIX: Attach event listener with null check
     if (jenjangSelect) {
         jenjangSelect.addEventListener('change', handleJenjangChange);
         console.log('✅ Event listener attached to jenjangSelect');
     } else {
-        console.error('❌ jenjangSelect element not found!');
+        console.error('❌ ERROR: jenjangSelect element not found!');
     }
     
     // Attach form submit handler
@@ -97,17 +109,24 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log('✅ Form submit handler attached');
     }
     
-    // Real-time validation
+    // Real-time validation on input
     document.querySelectorAll('.form-input').forEach(input => {
         input?.addEventListener('input', () => clearError(input.id));
+        input?.addEventListener('blur', () => validateField(input.id));
     });
+    
+    // Initial check: if page loads with pre-filled jenjang (browser back button)
+    if (jenjangSelect?.value) {
+        handleJenjangChange({ target: jenjangSelect });
+    }
 });
 
 // ============================================
-// FUNGSI: Handle Jenjang Change (FIXED)
+// FUNGSI: Handle Jenjang Change
+// ✅ FIX: Properly show/hide mata pelajaran field
 // ============================================
 function handleJenjangChange(e) {
-    const jenjang = e.target.value;
+    const jenjang = e.target?.value || e.value;
     
     console.log('🔄 Jenjang changed to:', jenjang);
     
@@ -121,7 +140,8 @@ function handleJenjangChange(e) {
     if (jenjang === 'smp' || jenjang === 'sma') {
         if (mapelGroup) {
             mapelGroup.classList.remove('hidden');
-            console.log('✅ mapelGroup shown');
+            mapelGroup.setAttribute('data-jenjang', jenjang);
+            console.log('✅ mapelGroup shown for', jenjang);
         }
         populateMataPelajaran(jenjang);
         if (mapelSelect) {
@@ -130,7 +150,8 @@ function handleJenjangChange(e) {
     } else {
         if (mapelGroup) {
             mapelGroup.classList.add('hidden');
-            console.log('❌ mapelGroup hidden');
+            mapelGroup.removeAttribute('data-jenjang');
+            console.log('❌ mapelGroup hidden for SD');
         }
         if (mapelSelect) {
             mapelSelect.required = false;
@@ -140,6 +161,7 @@ function handleJenjangChange(e) {
 
 // ============================================
 // FUNGSI: Populate Mata Pelajaran Dropdown
+// ✅ Dynamic options based on jenjang
 // ============================================
 function populateMataPelajaran(jenjang) {
     if (!mapelSelect) {
@@ -156,7 +178,7 @@ function populateMataPelajaran(jenjang) {
     console.log(`📚 Loading ${subjects.length} subjects for ${jenjang}`);
     
     // Add options
-    subjects.forEach(subject => {
+    subjects.forEach((subject, index) => {
         const option = document.createElement('option');
         option.value = subject;
         option.textContent = subject;
@@ -168,6 +190,7 @@ function populateMataPelajaran(jenjang) {
 
 // ============================================
 // FUNGSI: Toggle Password Visibility
+// ✅ Global function for HTML onclick
 // ============================================
 window.togglePassword = (fieldId) => {
     const input = document.getElementById(fieldId);
@@ -187,11 +210,11 @@ window.togglePassword = (fieldId) => {
 };
 
 // ============================================
-// FUNGSI: Validation
+// FUNGSI: Validation Helpers
 // ============================================
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return re.test(email);
+    return re.test(String(email).toLowerCase());
 }
 
 function validatePhone(phone) {
@@ -203,10 +226,14 @@ function showError(fieldId, message) {
     const input = document.getElementById(fieldId);
     const errorEl = document.getElementById(`error-${fieldId}`);
     
-    if (input) input.classList.add('error');
+    if (input) {
+        input.classList.add('error');
+        input.setAttribute('aria-invalid', 'true');
+    }
     if (errorEl) {
         errorEl.textContent = message;
         errorEl.classList.add('visible');
+        errorEl.setAttribute('role', 'alert');
     }
 }
 
@@ -214,11 +241,64 @@ function clearError(fieldId) {
     const input = document.getElementById(fieldId);
     const errorEl = document.getElementById(`error-${fieldId}`);
     
-    if (input) input.classList.remove('error');
+    if (input) {
+        input.classList.remove('error');
+        input.removeAttribute('aria-invalid');
+    }
     if (errorEl) {
         errorEl.textContent = '';
         errorEl.classList.remove('visible');
     }
+}
+
+function validateField(fieldId) {
+    const input = document.getElementById(fieldId);
+    if (!input) return true;
+    
+    const value = input.value.trim();
+    
+    switch(fieldId) {
+        case 'email':
+            if (!value) {
+                showError('email', 'Email wajib diisi');
+                return false;
+            } else if (!validateEmail(value)) {
+                showError('email', 'Format email tidak valid');
+                return false;
+            }
+            break;
+        case 'noHp':
+            if (!value) {
+                showError('noHp', 'Nomor WhatsApp wajib diisi');
+                return false;
+            } else if (!validatePhone(value)) {
+                showError('noHp', 'Format nomor tidak valid (08xxxxxxxxxx)');
+                return false;
+            }
+            break;
+        case 'password':
+            if (!value) {
+                showError('password', 'Password wajib diisi');
+                return false;
+            } else if (value.length < 8) {
+                showError('password', 'Password minimal 8 karakter');
+                return false;
+            }
+            break;
+        case 'confirmPassword':
+            const password = document.getElementById('password')?.value;
+            if (!value) {
+                showError('confirmPassword', 'Konfirmasi password wajib diisi');
+                return false;
+            } else if (value !== password) {
+                showError('confirmPassword', 'Password tidak sama');
+                return false;
+            }
+            break;
+    }
+    
+    clearError(fieldId);
+    return true;
 }
 
 function validateForm() {
@@ -235,27 +315,11 @@ function validateForm() {
     
     // Email
     const email = document.getElementById('email')?.value.trim();
-    if (!email) {
-        showError('email', 'Email wajib diisi');
-        isValid = false;
-    } else if (!validateEmail(email)) {
-        showError('email', 'Format email tidak valid');
-        isValid = false;
-    } else {
-        clearError('email');
-    }
+    if (!validateField('email')) isValid = false;
     
     // No HP
     const noHp = document.getElementById('noHp')?.value.trim();
-    if (!noHp) {
-        showError('noHp', 'Nomor WhatsApp wajib diisi');
-        isValid = false;
-    } else if (!validatePhone(noHp)) {
-        showError('noHp', 'Format nomor tidak valid (contoh: 081234567890)');
-        isValid = false;
-    } else {
-        clearError('noHp');
-    }
+    if (!validateField('noHp')) isValid = false;
     
     // Jenjang
     const jenjang = jenjangSelect?.value;
@@ -287,28 +351,10 @@ function validateForm() {
     }
     
     // Password
-    const password = document.getElementById('password')?.value;
-    if (!password) {
-        showError('password', 'Password wajib diisi');
-        isValid = false;
-    } else if (password.length < 8) {
-        showError('password', 'Password minimal 8 karakter');
-        isValid = false;
-    } else {
-        clearError('password');
-    }
+    if (!validateField('password')) isValid = false;
     
     // Confirm Password
-    const confirmPassword = document.getElementById('confirmPassword')?.value;
-    if (!confirmPassword) {
-        showError('confirmPassword', 'Konfirmasi password wajib diisi');
-        isValid = false;
-    } else if (confirmPassword !== password) {
-        showError('confirmPassword', 'Password tidak sama');
-        isValid = false;
-    } else {
-        clearError('confirmPassword');
-    }
+    if (!validateField('confirmPassword')) isValid = false;
     
     // Terms
     const terms = document.getElementById('terms')?.checked;
@@ -333,10 +379,13 @@ async function handleFormSubmit(e) {
     // Validate form
     if (!validateForm()) {
         console.log('❌ Validation failed');
-        // Scroll to first error
+        // Scroll to first error (mobile-friendly)
         const firstError = document.querySelector('.form-error.visible');
         if (firstError) {
             firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Focus the related input for mobile keyboard
+            const inputId = firstError.id.replace('error-', '');
+            document.getElementById(inputId)?.focus();
         }
         return;
     }
@@ -353,15 +402,17 @@ async function handleFormSubmit(e) {
         email: document.getElementById('email')?.value.trim(),
         noHp: document.getElementById('noHp')?.value.trim(),
         jenjang: jenjangSelect?.value,
-        mataPelajaran: mapelSelect?.value || null,
+        mataPelajaran: (jenjangSelect?.value === 'smp' || jenjangSelect?.value === 'sma') 
+            ? mapelSelect?.value || null 
+            : null,
         sekolah: document.getElementById('sekolah')?.value.trim(),
         password: document.getElementById('password')?.value
     };
     
-    console.log('📦 Form data:', formData);
+    console.log('📦 Form data:', { ...formData, password: '[REDACTED]' });
     
     try {
-        // Call register function
+        // Call register function from module
         const result = await registerGuru(formData);
         
         if (result.success) {
@@ -380,12 +431,12 @@ async function handleFormSubmit(e) {
         }
     } catch (error) {
         console.error('❌ Registration error:', error);
-        alert(`❌ Terjadi kesalahan: ${error.message}`);
+        alert(`❌ Terjadi kesalahan: ${error.message || 'Silakan coba lagi'}`);
         // Reset button state
         if (submitBtn) submitBtn.classList.remove('hidden');
         if (loadingBtn) loadingBtn.classList.add('hidden');
     }
 }
 
-// Export for global access
+// Export for global access (if needed)
 window.togglePassword = togglePassword;
