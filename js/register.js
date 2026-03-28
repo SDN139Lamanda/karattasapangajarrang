@@ -43,23 +43,19 @@ const MATA_PELAJARAN = {
         'Seni Teater',
         'Prakarya',
         'Informatika',
-        // IPA
         'Fisika',
         'Kimia',
         'Biologi',
-        // IPS
         'Geografi',
         'Sejarah',
         'Sosiologi',
         'Ekonomi',
-        // Bahasa
         'Bahasa Jerman',
         'Bahasa Prancis',
         'Bahasa Arab',
         'Bahasa Jepang',
         'Bahasa Korea',
         'Bahasa Mandarin',
-        // Lainnya
         'Pendidikan Agama Islam',
         'Pendidikan Agama Kristen',
         'Pendidikan Agama Katolik',
@@ -70,14 +66,105 @@ const MATA_PELAJARAN = {
 };
 
 // ============================================
-// DOM ELEMENTS
+// DOM ELEMENTS (Wait for DOM ready)
 // ============================================
-const registerForm = document.getElementById('registerForm');
-const jenjangSelect = document.getElementById('jenjang');
-const mapelGroup = document.getElementById('mapelGroup');
-const mapelSelect = document.getElementById('mataPelajaran');
-const submitBtn = document.getElementById('submitBtn');
-const loadingBtn = document.getElementById('loadingBtn');
+let registerForm, jenjangSelect, mapelGroup, mapelSelect, submitBtn, loadingBtn;
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Get DOM elements
+    registerForm = document.getElementById('registerForm');
+    jenjangSelect = document.getElementById('jenjang');
+    mapelGroup = document.getElementById('mapelGroup');
+    mapelSelect = document.getElementById('mataPelajaran');
+    submitBtn = document.getElementById('submitBtn');
+    loadingBtn = document.getElementById('loadingBtn');
+    
+    console.log('📋 Register form loaded');
+    console.log('🔍 jenjangSelect:', jenjangSelect);
+    console.log('🔍 mapelGroup:', mapelGroup);
+    
+    // ✅ FIX: Attach event listener dengan benar
+    if (jenjangSelect) {
+        jenjangSelect.addEventListener('change', handleJenjangChange);
+        console.log('✅ Event listener attached to jenjangSelect');
+    } else {
+        console.error('❌ jenjangSelect element not found!');
+    }
+    
+    // Attach form submit handler
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleFormSubmit);
+        console.log('✅ Form submit handler attached');
+    }
+    
+    // Real-time validation
+    document.querySelectorAll('.form-input').forEach(input => {
+        input?.addEventListener('input', () => clearError(input.id));
+    });
+});
+
+// ============================================
+// FUNGSI: Handle Jenjang Change (FIXED)
+// ============================================
+function handleJenjangChange(e) {
+    const jenjang = e.target.value;
+    
+    console.log('🔄 Jenjang changed to:', jenjang);
+    
+    // Clear previous selection
+    if (mapelSelect) {
+        mapelSelect.value = '';
+    }
+    clearError('mataPelajaran');
+    
+    // Show/hide based on jenjang
+    if (jenjang === 'smp' || jenjang === 'sma') {
+        if (mapelGroup) {
+            mapelGroup.classList.remove('hidden');
+            console.log('✅ mapelGroup shown');
+        }
+        populateMataPelajaran(jenjang);
+        if (mapelSelect) {
+            mapelSelect.required = true;
+        }
+    } else {
+        if (mapelGroup) {
+            mapelGroup.classList.add('hidden');
+            console.log('❌ mapelGroup hidden');
+        }
+        if (mapelSelect) {
+            mapelSelect.required = false;
+        }
+    }
+}
+
+// ============================================
+// FUNGSI: Populate Mata Pelajaran Dropdown
+// ============================================
+function populateMataPelajaran(jenjang) {
+    if (!mapelSelect) {
+        console.error('❌ mapelSelect element not found!');
+        return;
+    }
+    
+    // Clear existing options (keep first option)
+    mapelSelect.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
+    
+    // Get subjects for selected jenjang
+    const subjects = MATA_PELAJARAN[jenjang] || [];
+    
+    console.log(`📚 Loading ${subjects.length} subjects for ${jenjang}`);
+    
+    // Add options
+    subjects.forEach(subject => {
+        const option = document.createElement('option');
+        option.value = subject;
+        option.textContent = subject;
+        mapelSelect.appendChild(option);
+    });
+    
+    console.log('✅ Subjects populated');
+}
 
 // ============================================
 // FUNGSI: Toggle Password Visibility
@@ -85,6 +172,8 @@ const loadingBtn = document.getElementById('loadingBtn');
 window.togglePassword = (fieldId) => {
     const input = document.getElementById(fieldId);
     const icon = document.getElementById(`toggle${fieldId.charAt(0).toUpperCase() + fieldId.slice(1)}Icon`);
+    
+    if (!input || !icon) return;
     
     if (input.type === 'password') {
         input.type = 'text';
@@ -96,46 +185,6 @@ window.togglePassword = (fieldId) => {
         icon.classList.add('fa-eye');
     }
 };
-
-// ============================================
-// FUNGSI: Populate Mata Pelajaran Dropdown
-// ============================================
-function populateMataPelajaran(jenjang) {
-    // Clear existing options (keep first option)
-    mapelSelect.innerHTML = '<option value="">Pilih Mata Pelajaran</option>';
-    
-    // Get subjects for selected jenjang
-    const subjects = MATA_PELAJARAN[jenjang] || [];
-    
-    // Add options
-    subjects.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject;
-        option.textContent = subject;
-        mapelSelect.appendChild(option);
-    });
-}
-
-// ============================================
-// FUNGSI: Show/Hide Mata Pelajaran Field
-// ============================================
-jenjangSelect?.addEventListener('change', (e) => {
-    const jenjang = e.target.value;
-    
-    // Clear previous selection
-    mapelSelect.value = '';
-    clearError('mataPelajaran');
-    
-    // Show/hide based on jenjang
-    if (jenjang === 'smp' || jenjang === 'sma') {
-        mapelGroup.classList.remove('hidden');
-        populateMataPelajaran(jenjang);
-        mapelSelect.required = true;
-    } else {
-        mapelGroup.classList.add('hidden');
-        mapelSelect.required = false;
-    }
-});
 
 // ============================================
 // FUNGSI: Validation
@@ -176,7 +225,7 @@ function validateForm() {
     let isValid = true;
     
     // Nama Lengkap
-    const namaLengkap = document.getElementById('namaLengkap').value.trim();
+    const namaLengkap = document.getElementById('namaLengkap')?.value.trim();
     if (!namaLengkap) {
         showError('namaLengkap', 'Nama lengkap wajib diisi');
         isValid = false;
@@ -185,7 +234,7 @@ function validateForm() {
     }
     
     // Email
-    const email = document.getElementById('email').value.trim();
+    const email = document.getElementById('email')?.value.trim();
     if (!email) {
         showError('email', 'Email wajib diisi');
         isValid = false;
@@ -197,7 +246,7 @@ function validateForm() {
     }
     
     // No HP
-    const noHp = document.getElementById('noHp').value.trim();
+    const noHp = document.getElementById('noHp')?.value.trim();
     if (!noHp) {
         showError('noHp', 'Nomor WhatsApp wajib diisi');
         isValid = false;
@@ -229,7 +278,7 @@ function validateForm() {
     }
     
     // Sekolah
-    const sekolah = document.getElementById('sekolah').value.trim();
+    const sekolah = document.getElementById('sekolah')?.value.trim();
     if (!sekolah) {
         showError('sekolah', 'Nama sekolah wajib diisi');
         isValid = false;
@@ -238,7 +287,7 @@ function validateForm() {
     }
     
     // Password
-    const password = document.getElementById('password').value;
+    const password = document.getElementById('password')?.value;
     if (!password) {
         showError('password', 'Password wajib diisi');
         isValid = false;
@@ -250,7 +299,7 @@ function validateForm() {
     }
     
     // Confirm Password
-    const confirmPassword = document.getElementById('confirmPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword')?.value;
     if (!confirmPassword) {
         showError('confirmPassword', 'Konfirmasi password wajib diisi');
         isValid = false;
@@ -276,11 +325,14 @@ function validateForm() {
 // ============================================
 // FUNGSI: Handle Form Submit
 // ============================================
-registerForm?.addEventListener('submit', async (e) => {
+async function handleFormSubmit(e) {
     e.preventDefault();
+    
+    console.log('📝 Form submit triggered');
     
     // Validate form
     if (!validateForm()) {
+        console.log('❌ Validation failed');
         // Scroll to first error
         const firstError = document.querySelector('.form-error.visible');
         if (firstError) {
@@ -289,52 +341,51 @@ registerForm?.addEventListener('submit', async (e) => {
         return;
     }
     
+    console.log('✅ Validation passed');
+    
     // Show loading state
-    submitBtn.classList.add('hidden');
-    loadingBtn.classList.remove('hidden');
+    if (submitBtn) submitBtn.classList.add('hidden');
+    if (loadingBtn) loadingBtn.classList.remove('hidden');
     
     // Get form data
     const formData = {
-        namaLengkap: document.getElementById('namaLengkap').value.trim(),
-        email: document.getElementById('email').value.trim(),
-        noHp: document.getElementById('noHp').value.trim(),
+        namaLengkap: document.getElementById('namaLengkap')?.value.trim(),
+        email: document.getElementById('email')?.value.trim(),
+        noHp: document.getElementById('noHp')?.value.trim(),
         jenjang: jenjangSelect?.value,
         mataPelajaran: mapelSelect?.value || null,
-        sekolah: document.getElementById('sekolah').value.trim(),
-        password: document.getElementById('password').value
+        sekolah: document.getElementById('sekolah')?.value.trim(),
+        password: document.getElementById('password')?.value
     };
+    
+    console.log('📦 Form data:', formData);
     
     try {
         // Call register function
         const result = await registerGuru(formData);
         
         if (result.success) {
+            console.log('✅ Registration successful');
             // Show success message
             alert(`✅ ${result.message}\n\nSilakan cek email Anda untuk verifikasi.`);
             // Redirect to login
             window.location.href = 'login.html';
         } else {
+            console.error('❌ Registration failed:', result.error);
             // Show error
             alert(`❌ ${result.error}`);
             // Reset button state
-            submitBtn.classList.remove('hidden');
-            loadingBtn.classList.add('hidden');
+            if (submitBtn) submitBtn.classList.remove('hidden');
+            if (loadingBtn) loadingBtn.classList.add('hidden');
         }
     } catch (error) {
-        console.error('Registration error:', error);
+        console.error('❌ Registration error:', error);
         alert(`❌ Terjadi kesalahan: ${error.message}`);
         // Reset button state
-        submitBtn.classList.remove('hidden');
-        loadingBtn.classList.add('hidden');
+        if (submitBtn) submitBtn.classList.remove('hidden');
+        if (loadingBtn) loadingBtn.classList.add('hidden');
     }
-});
+}
 
-// ============================================
-// REAL-TIME VALIDATION (Optional Enhancement)
-// ============================================
-// Clear error on input
-document.querySelectorAll('.form-input').forEach(input => {
-    input?.addEventListener('input', () => {
-        clearError(input.id);
-    });
-});
+// Export for global access
+window.togglePassword = togglePassword;
