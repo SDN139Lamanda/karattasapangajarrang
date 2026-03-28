@@ -24,6 +24,11 @@
         <div class="container">
             <div class="nav-content">
                 <div class="nav-brand">
+                    <!-- ✅ FITUR BARU: Tombol Kembali ke Beranda -->
+                    <a href="index.html" class="btn btn-ghost btn-sm mr-2 flex items-center gap-1" title="Kembali ke Beranda" aria-label="Kembali ke Beranda">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="hidden sm:inline">Beranda</span>
+                    </a>
                     <div class="nav-logo">
                         <i class="fas fa-school"></i>
                     </div>
@@ -45,6 +50,12 @@
             <div class="form-card">
                 <!-- Header -->
                 <div class="form-header">
+                    <!-- ✅ FITUR BARU: Tombol Kembali di Header (Mobile Friendly) -->
+                    <a href="index.html" class="btn-back-home" aria-label="Kembali ke Beranda">
+                        <i class="fas fa-arrow-left"></i>
+                        <span class="hidden sm:inline">Kembali</span>
+                    </a>
+                    
                     <div class="form-icon">
                         <i class="fas fa-user-plus"></i>
                     </div>
@@ -67,6 +78,7 @@
                             class="form-input" 
                             placeholder="Contoh: Budi Santoso, S.Pd"
                             required
+                            autocomplete="name"
                         >
                         <p class="form-error" id="error-namaLengkap"></p>
                     </div>
@@ -83,6 +95,7 @@
                             class="form-input" 
                             placeholder="nama@guru.sd.belajar.id"
                             required
+                            autocomplete="email"
                         >
                         <p class="form-hint">Gunakan email resmi guru (@guru.sd.belajar.id atau domain sekolah)</p>
                         <p class="form-error" id="error-email"></p>
@@ -100,6 +113,8 @@
                             class="form-input" 
                             placeholder="081234567890"
                             required
+                            autocomplete="tel"
+                            pattern="08[0-9]{8,11}"
                         >
                         <p class="form-hint">Format: 08xxxxxxxxxx</p>
                         <p class="form-error" id="error-noHp"></p>
@@ -125,7 +140,8 @@
                     </div>
 
                     <!-- Mata Pelajaran (Conditional - Hanya untuk SMP/SMA) -->
-                    <div class="form-group hidden" id="mapelGroup">
+                    <!-- ✅ FIX: Pastikan ID dan class konsisten untuk JS -->
+                    <div class="form-group hidden" id="mapelGroup" data-jenjang="">
                         <label for="mataPelajaran" class="form-label">
                             <i class="fas fa-book mr-2"></i>Mata Pelajaran *
                         </label>
@@ -153,6 +169,7 @@
                             class="form-input" 
                             placeholder="Contoh: SDN 139 LAMANDA"
                             required
+                            autocomplete="organization"
                         >
                         <p class="form-error" id="error-sekolah"></p>
                     </div>
@@ -171,8 +188,9 @@
                                 placeholder="Minimal 8 karakter"
                                 minlength="8"
                                 required
+                                autocomplete="new-password"
                             >
-                            <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            <button type="button" class="password-toggle" onclick="togglePassword('password')" aria-label="Tampilkan password">
                                 <i class="fas fa-eye" id="togglePasswordIcon"></i>
                             </button>
                         </div>
@@ -193,8 +211,9 @@
                                 class="form-input" 
                                 placeholder="Ulangi password"
                                 required
+                                autocomplete="new-password"
                             >
-                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">
+                            <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')" aria-label="Tampilkan password">
                                 <i class="fas fa-eye" id="toggleConfirmPasswordIcon"></i>
                             </button>
                         </div>
@@ -215,12 +234,12 @@
 
                     <!-- Submit Button -->
                     <button type="submit" class="btn btn-primary btn-block btn-lg" id="submitBtn">
-                        <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
+                        <i class="fas fa-user-plus mr-2"></i><span class="hidden sm:inline">Daftar Sekarang</span><span class="sm:hidden">Daftar</span>
                     </button>
 
                     <!-- Loading State (Hidden by default) -->
                     <button type="button" class="btn btn-primary btn-block btn-lg hidden" id="loadingBtn" disabled>
-                        <i class="fas fa-spinner fa-spin mr-2"></i>Memproses...
+                        <i class="fas fa-spinner fa-spin mr-2"></i><span class="hidden sm:inline">Memproses...</span><span class="sm:hidden">Proses...</span>
                     </button>
                 </form>
 
