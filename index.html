@@ -4268,10 +4268,10 @@ if (passwordEl) passwordEl.value = nisn;
 function saveGuru() {
 const nama = document.getElementById('guru-nama').value.trim();
 const nip = document.getElementById('guru-nip').value.trim();
-rtdb.ref('users/' + username).set({ password, role: 'guru', nama, nip, mapel })
 const mapel = document.getElementById('guru-mapel').value.trim();
 const password = document.getElementById('guru-password').value.trim();
 const username = nip; // NIP = username
+rtdb.ref('users/' + username).set({ password, role: 'guru', nama, nip, mapel }) 
 if (!nama || !nip || !password) { showToast('Lengkapi semua field!', 'warn'); return; }
 if (DB.users[username]) { showToast(`NIP "${nip}" sudah terdaftar!`, 'error'); return; }
 DB.users[username] = { password, role: 'guru', nama, nip, mapel };
@@ -4286,6 +4286,7 @@ const nisn = document.getElementById('siswa-nisn').value.trim();
 const kelas = document.getElementById('siswa-kelas').value;
 const username = document.getElementById('siswa-username').value.trim();
 const password = document.getElementById('siswa-password').value.trim();
+rtdb.ref('users/' + username).set({ password, role: 'siswa', nama, nisn, kelas });
 if (!nama || !username || !password) { showToast('Lengkapi semua field!', 'warn'); return; }
 if (DB.users[username]) { showToast('Username sudah digunakan!', 'error'); return; }
 DB.users[username] = { password, role: 'siswa', nama, nisn, kelas };
@@ -4300,6 +4301,7 @@ const mapel = document.getElementById('ujian-mapel').value.trim();
 const kelas = document.getElementById('ujian-kelas').value;
 const durasi = parseInt(document.getElementById('ujian-durasi').value);
 const token = document.getElementById('ujian-token').value.trim();
+rtdb.ref('ujian/' + ujianBaru.id).set(ujianBaru); 
 if (!nama || !mapel || !token) { showToast('Lengkapi semua field!', 'warn'); return; }
 
 // Get soal sesuai mapel — guru hanya bisa pakai soal miliknya
