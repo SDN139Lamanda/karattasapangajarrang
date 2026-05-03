@@ -4020,9 +4020,11 @@ const durasi = examState.ujian.durasi * 60 - examState.timeLeft;
 const dm = String(Math.floor(durasi/60)).padStart(2,'0');
 const ds = String(durasi%60).padStart(2,'0');
 
-// Simpan hasil (demo)
+// Simpan hasil 
+const hasilId = 'H' + Date.now();
 DB.hasil.push({
-id: 'H' + Date.now(),
+  id: hasilId,
+rtdb.ref('hasil/' + hasilId).set(DB.hasil[DB.hasil.length-1]);
 ujianId: examState.ujian.id,
 siswaId: session.user,
 nama: session.userData.nama,
