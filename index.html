@@ -4354,10 +4354,10 @@ if (!a||!b||!c||!d) { showToast('Lengkapi semua pilihan jawaban!', 'warn'); retu
 soalBaru.opsi = [a,b,c,d];
 soalBaru.kunci = ['A','B','C','D'].indexOf(kunci);
 }
-DB.bankSoal.push(soalBaru);
-closeModal('modal-soal');
-showToast('Soal berhasil ditambahkan ke bank soal!', 'success');
-renderBankSoal();
+const newRef = rtdb.ref('bankSoal').push();
+soalBaru.id = newRef.key;
+newRef.set(soalBaru);
+DB.bankSoal.push(soalBaru); // Tetap push ke lokal agar UI langsung update
 }
 
 function gantiPassword() {
