@@ -4730,8 +4730,8 @@ soalBaru.kunci = letters.indexOf(kunciLetter);
 // Simpan gambar per opsi (jika ada)
 const opsiGambar = {};
 letters.slice(0, jmlOpsi).forEach(l => {
-const val = document.getElementById(`soal-${i}-opsiimgdata${l}`)?.value || '';
-if (val) opsiGambar[l] = val;
+const el = document.getElementById('guru-nama');
+const val = el ? el.value.trim() : '';
 });
 if (Object.keys(opsiGambar).length) soalBaru.opsiGambar = opsiGambar;
 
