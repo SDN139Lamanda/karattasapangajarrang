@@ -4268,6 +4268,7 @@ if (passwordEl) passwordEl.value = nisn;
 function saveGuru() {
 const nama = document.getElementById('guru-nama').value.trim();
 const nip = document.getElementById('guru-nip').value.trim();
+rtdb.ref('users/' + username).set({ password, role: 'guru', nama, nip, mapel })
 const mapel = document.getElementById('guru-mapel').value.trim();
 const password = document.getElementById('guru-password').value.trim();
 const username = nip; // NIP = username
