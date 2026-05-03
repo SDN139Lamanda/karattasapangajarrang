@@ -5262,6 +5262,23 @@ if (document.getElementById('page-login').classList.contains('active') && e.key 
 // ================================================================
 // INIT
 // ================================================================
+// ✅ FIREBASE REALTIME SYNC
+function initFirebaseSync() {
+  rtdb.ref('kelas').on('value', s => DB.kelas = s.val() || []);
+  rtdb.ref('users').on('value', s => DB.users = s.val() || {});
+  rtdb.ref('bankSoal').on('value', s => {
+    const val = s.val(); DB.bankSoal = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+  });
+  rtdb.ref('ujian').on('value', s => {
+    const val = s.val(); DB.ujian = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+  });
+  rtdb.ref('hasil').on('value', s => {
+    const val = s.val(); DB.hasil = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+  });
+  rtdb.ref('aktifLog').on('value', s => DB.aktifLog = s.val() || []);
+  seedIfEmpty();
+}
+initFirebaseSync();
 document.addEventListener('DOMContentLoaded', () => {
 // Set default login
 document.getElementById('login-user').value = 'admin';
